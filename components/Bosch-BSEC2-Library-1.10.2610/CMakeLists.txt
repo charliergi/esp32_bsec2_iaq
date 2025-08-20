@@ -1,0 +1,10 @@
+idf_component_register(SRCS "src/bsec2.cpp"
+                    INCLUDE_DIRS "src" "src/inc"
+                    REQUIRES Bosch-BME68x-Library-1.3.40408 espressif__arduino-esp32)
+
+# Add the library as a private component
+target_link_libraries(${COMPONENT_LIB} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/esp32s3/libalgobsec.a
+)
+
+target_compile_definitions(${COMPONENT_LIB} PRIVATE ARDUINO=200)
