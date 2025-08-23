@@ -2,7 +2,7 @@
 This project is an addendum of my cover letter for the job "Ingénieur IoT & IA embarquée (Smart Campus & plateforme IA durable)" from ULB, Brussels. 
 ## Pipeline overview (Homeserver + Wireguard VPN + MQTT + InfluxDB)
 <img width="1103" height="513" alt="architecture drawio" src="https://github.com/user-attachments/assets/2cd821ad-8bab-422c-b3d8-72868dd36c3f" />
-![2025-08-23-17-40-04-789](https://github.com/user-attachments/assets/2a1d8055-6fd8-4855-b124-71c8ab0ee2ee)
+<img width="296" height="605" alt="image" src="https://github.com/user-attachments/assets/87842cf5-e8a4-44f6-9b79-dc24d118d0b3" />
 
 
 ## Requirements
