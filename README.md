@@ -1,6 +1,7 @@
 # Indoor quality monitoring using ESP32 + BME688
 This project is an addendum of my cover letter for the job "Ingénieur IoT & IA embarquée (Smart Campus & plateforme IA durable)" from ULB, Brussels. 
-## Pipeline overview
+## Pipeline overview (Homeserver + Wireguard VPN + MQTT + InfluxDB)
+<img width="1103" height="513" alt="architecture drawio" src="https://github.com/user-attachments/assets/2cd821ad-8bab-422c-b3d8-72868dd36c3f" />
 
 ## Requirements
 - ESP32 embedded device
