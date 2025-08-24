@@ -15,14 +15,12 @@ This project is an addendum of my cover letter for the job "Ingénieur IoT & IA 
 ```` 
 $ mkdir -p ~/esp/projects
 $ cd ~/esp/projects
-$ git clone https://github.com/charliergi/esp32_bsec2_iaq.git
+$ git clone --recurse-submodules https://github.com/charliergi/esp32_bsec2_iaq.git
 ````
-- Clone BSEC2 and BME88 repositories in subfolder components
+- Run the install script to copy CMakeLists.txt into the components folders.
 ````
 $ cd esp32_bsec2_iaq
-$ mkdir components && cd components
-$ git clone --depth 1 --branch v1.10.2610 https://github.com/boschsensortec/Bosch-BSEC2-Library.git
-$ git clone --depth 1 --branch v4.4.8 https://github.com/boschsensortec/BME68x_SensorAPI.git
+$ ./install.sh
 ````
 - Create an .env file in in the main folder with the following variables 
 ````
