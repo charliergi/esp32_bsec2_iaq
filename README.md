@@ -2,10 +2,11 @@
 This project is an addendum of my cover letter for the job "Ingénieur IoT & IA embarquée (Smart Campus & plateforme IA durable)" from ULB, Brussels. 
 
 ## Pipeline overview (Homeserver + Wireguard VPN + MQTT + InfluxDB)
-The C++ code uses Bosch’s BME688 and BSEC2 libraries and is programmed with the ESP-IDF framework. First, the BME688 is connected via SPI and collects data every 5 minutes. Each message is sent via MQTT to a MQTT broker through a secured WireGuard VPN client and a public address.
+The C++ code uses Bosch’s BME688 and BSEC2 libraries and is programmed with the ESP-IDF framework. First, the BME688 is connected via SPI and collects data every 5 minutes. Each message is sent via MQTT to a MQTT broker through a secured WireGuard VPN connection and a public address.
 
 After that, InfluxDB retrieves and stores measurements on my homeserver, which are then displayed through Grafana.
-All these softwares run on my homeserver, using Docker. 
+All these softwares run on my homeserver, using Docker.
+Custom alerts can be defined on Grafana to automatically open windows or start the ventilation system.
 
 <img width="1103" height="513" alt="architecture drawio" src="https://github.com/user-attachments/assets/2cd821ad-8bab-422c-b3d8-72868dd36c3f" />
 <img width="296" height="605" alt="image" src="https://github.com/user-attachments/assets/87842cf5-e8a4-44f6-9b79-dc24d118d0b3" />
