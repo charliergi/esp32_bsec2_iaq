@@ -1,0 +1,6 @@
+[submodule "components/Bosch-BSEC2-Library"]
+	path = components/Bosch-BSEC2-Library
+	url = https://github.com/boschsensortec/Bosch-BSEC2-Library.git
+[submodule "components/Bosch-BME68x-Library"]
+	path = components/Bosch-BME68x-Library
+	url = https://github.com/boschsensortec/Bosch-BME68x-Library.git

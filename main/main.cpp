@@ -1,12 +1,17 @@
 #include <Arduino.h>
 #include <bsec2.h>
 #include <SPI.h>
+#include "mqtt_control/mqtt.h"
+#include "mqtt_client.h"
+#include "esp_log.h"
+
+
 
 /* Macros used */
 #define PANIC_LED   LED_BUILTIN
 #define ERROR_DUR   1000
 
-#define SAMPLE_RATE BSEC_SAMPLE_RATE_LP
+#define SAMPLE_RATE BSEC_SAMPLE_RATE_ULP
 
 // --- SPI Chip Select pin for ESP32-S3 DevKit C ---
 #define PIN_CS   10   // Adjust this to the actual CS pin you're using
@@ -90,6 +95,23 @@ void setup(void)
             + String(envSensor.version.minor_bugfix));
 }
 
+void mqtt_wifi_setup(void){
+    load_env_vars();
+
+    // esp_err_t ret = nvs_flash_init();
+    // if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    //   ESP_ERROR_CHECK(nvs_flash_erase());
+    //   ret = nvs_flash_init();
+    // }
+    // ESP_ERROR_CHECK(ret);
+
+    // Initialize Wi-Fi
+    wifi_init_sta();
+
+    // Initialize MQTT
+    mqtt_app_start();
+}
+
 /* Function that is looped forever */
 void loop(void)
 {
@@ -117,60 +139,117 @@ void newDataCallback(const bme68xData data, const bsecOutputs outputs, Bsec2 bse
         return;
     }
 
+    // Declare topic and payload once, outside the loop
+    char topic[64];
+    char payload[32];
+
     Serial.println("BSEC outputs:\n\tTime stamp = " + String((int) (outputs.output[0].time_stamp / INT64_C(1000000))));
+
     for (uint8_t i = 0; i < outputs.nOutputs; i++)
     {
-        const bsecData output  = outputs.output[i];
+        const bsecData output = outputs.output[i];
+
+        // Set topic and payload based on sensor ID
         switch (output.sensor_id)
         {
             case BSEC_OUTPUT_IAQ:
                 Serial.println("\tIAQ = " + String(output.signal));
                 Serial.println("\tIAQ accuracy = " + String((int) output.accuracy));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/accuracy");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.accuracy);
                 break;
+
             case BSEC_OUTPUT_RAW_TEMPERATURE:
                 Serial.println("\tTemperature = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/temperature");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_RAW_PRESSURE:
                 Serial.println("\tPressure = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/pressure");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_RAW_HUMIDITY:
                 Serial.println("\tHumidity = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/humidity");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_RAW_GAS:
                 Serial.println("\tGas resistance = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/gas_resistance");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_STABILIZATION_STATUS:
                 Serial.println("\tStabilization status = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/stabilization_status");
+                snprintf(payload, sizeof(payload), "%d", (int)output.signal);
                 break;
+
             case BSEC_OUTPUT_RUN_IN_STATUS:
                 Serial.println("\tRun in status = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/run_in_status");
+                snprintf(payload, sizeof(payload), "%d", (int)output.signal);
                 break;
+
             case BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE:
                 Serial.println("\tCompensated temperature = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/compensated_temperature");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY:
                 Serial.println("\tCompensated humidity = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/compensated_humidity");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_STATIC_IAQ:
                 Serial.println("\tStatic IAQ = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/static_iaq");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_CO2_EQUIVALENT:
                 Serial.println("\tCO2 Equivalent = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/co2_equivalent");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_BREATH_VOC_EQUIVALENT:
                 Serial.println("\tbVOC equivalent = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/bvoc_equivalent");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_GAS_PERCENTAGE:
                 Serial.println("\tGas percentage = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/gas_percentage");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             case BSEC_OUTPUT_COMPENSATED_GAS:
                 Serial.println("\tCompensated gas = " + String(output.signal));
+                snprintf(topic, sizeof(topic), "esp32/bsec2/compensated_gas");
+                snprintf(payload, sizeof(payload), "%.2f", (double)output.signal);
                 break;
+
             default:
                 break;
         }
+
+        // Only publish if topic is valid (not empty)
+        if (topic[0] != '\0')
+        {
+            // Ensure payload is properly formatted (no overwrite)
+            esp_mqtt_client_publish(mqtt_client, topic, payload, 0, 1, 0);
+        }
     }
 }
+
 
 void checkBsecStatus(Bsec2 bsec)
 {
@@ -207,6 +286,8 @@ extern "C" void app_main(void) {
     
     // Call Arduino's setup
     setup();
+
+    mqtt_wifi_setup();
     
     // Run Arduino's loop in a task
     while (true) {
